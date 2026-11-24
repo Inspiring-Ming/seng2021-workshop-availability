@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENG2021 Workshop Availability</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #16202e; --muted: #5b6878; --line: #d5dbe4;
+  --accent: #0f6b74; --accent-ink: #ffffff;
+  --pref-bg: #d9f0e1; --pref-ink: #14532d; --ok-bg: #e0ecf7; --ok-ink: #1d4a75;
+  --no-bg: #eceff3; --warn: #9a3412;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10161d; --surface: #18212b; --ink: #e6ebf1; --muted: #98a5b5; --line: #2c3947;
+    --accent: #4fc3cd; --accent-ink: #062a2e;
+    --pref-bg: #173d27; --pref-ink: #a9e5bd; --ok-bg: #1a3350; --ok-ink: #a9cdf0;
+    --no-bg: #222c38; --warn: #fdba74;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 28px 16px 56px; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+.lede { color: var(--muted); max-width: 62ch; margin: 8px 0 0; }
+.note { color: var(--muted); font-size: 0.875rem; margin: 0; }
+.note.warn { color: var(--warn); }
+form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; }
+.slot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.slot-when { font-weight: 600; font-variant-numeric: tabular-nums; }
+.slot-meta { color: var(--muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label { padding: 8px 12px; font-size: 0.875rem; font-weight: 500; cursor: pointer; color: var(--muted); border-left: 1px solid var(--line); white-space: nowrap; }
+.seg label:first-of-type { border-left: 0; }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+.seg input[value="pref"]:checked + label { background: var(--pref-bg); color: var(--pref-ink); }
+.seg input[value="ok"]:checked + label { background: var(--ok-bg); color: var(--ok-ink); }
+.seg input[value="no"]:checked + label { background: var(--no-bg); color: var(--ink); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 16px; padding: 16px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+.field > label { font-size: 0.8125rem; font-weight: 600; }
+input[type="text"], select, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+textarea { resize: vertical; min-height: 60px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 0 16px 16px; }
+button { font: inherit; cursor: pointer; border-radius: 8px; background: var(--accent); color: var(--accent-ink); border: 0; padding: 10px 18px; font-weight: 600; }
+button:disabled { opacity: 0.55; cursor: default; }
+#status { font-size: 0.875rem; color: var(--muted); }
+#status.err { color: var(--warn); }
+@media (max-width: 560px) {
+  .slot { grid-template-columns: minmax(0, 1fr); }
+  .seg { display: flex; }
+  .seg label { flex: 1; text-align: center; padding-inline: 6px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SENG2021 · 27T1 · Workshop allocation</p>
+    <h1>Which workshop times can you teach?</h1>
+    <p class="lede">Mark every time below, then save. Workshops run in weeks 1–5 and 7–10. To change your answer, save again with the same name. Only the course admin sees your answer.</p>
+  </header>
+
+  <p class="note warn" id="setup-note" hidden>This form isn’t connected yet, so answers can’t be saved. The course admin needs to finish setup.</p>
+
+  <form id="avail-form" novalidate>
+    <div id="slots"></div>
+    <div class="fields">
+      <div class="field">
+        <label for="f-name">Your full name</label>
+        <input type="text" id="f-name" maxlength="60" autocomplete="name" placeholder="e.g. Alex Chen" required>
+      </div>
+      <div class="field">
+        <label for="f-max">Most workshops you want</label>
+        <select id="f-max">
+          <option value="">No limit</option>
+          <option value="1">1 workshop</option>
+          <option value="2">2 workshops</option>
+          <option value="3">3 workshops</option>
+          <option value="4">4 workshops</option>
+        </select>
+      </div>
+      <div class="field wide">
+        <label for="f-note">Anything the allocator should know (optional)</label>
+        <textarea id="f-note" maxlength="300" placeholder="e.g. Friday 11:00 only if I also get 09:00"></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" id="save-btn">Save availability</button>
+      <span id="status" role="status" aria-live="polite"></span>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  /* Paste the Google Apps Script web app URL between the quotes (see README). */
+  var ENDPOINT = "";
+
+  var SLOTS = [
+    { key: "T16", when: "Tue 16:00–18:00", meta: "T16A (9364) and T16B (9365), two workshops at once" },
+    { key: "F09", when: "Fri 09:00–11:00", meta: "F09A (9359)" },
+    { key: "F11", when: "Fri 11:00–13:00", meta: "F11A (9361)" },
+    { key: "F15", when: "Fri 15:00–17:00", meta: "F15A (9362)" }
+  ];
+  var CHOICES = [
+    { v: "pref", label: "Preferred" },
+    { v: "ok", label: "Can do" },
+    { v: "no", label: "Can’t" }
+  ];
+  var STORE_KEY = "seng2021-workshop-availability";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var el = function (tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  var host = $("slots");
+  SLOTS.forEach(function (s) {
+    var row = el("div", "slot"), info = el("div");
+    info.appendChild(el("div", "slot-when", s.when));
+    info.appendChild(el("div", "slot-meta", s.meta));
+    row.appendChild(info);
+    var fs = el("fieldset", "seg");
+    fs.setAttribute("aria-label", s.when);
+    CHOICES.forEach(function (c) {
+      var id = "s-" + s.key + "-" + c.v;
+      var inp = document.createElement("input");
+      inp.type = "radio"; inp.name = "s-" + s.key; inp.id = id; inp.value = c.v;
+      var lab = el("label", null, c.label); lab.htmlFor = id;
+      fs.appendChild(inp); fs.appendChild(lab);
+    });
+    row.appendChild(fs);
+    host.appendChild(row);
+  });
+
+  var form = $("avail-form"), statusEl = $("status"), saveBtn = $("save-btn"), saving = false;
+  function setStatus(msg, isErr) { statusEl.textContent = msg || ""; statusEl.className = isErr ? "err" : ""; }
+
+  if (!ENDPOINT) { $("setup-note").hidden = false; saveBtn.disabled = true; }
+
+  /* Refill the form with what this browser saved last time. */
+  try {
+    var prev = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (prev && prev.slots) {
+      SLOTS.forEach(function (s) {
+        var r = $("s-" + s.key + "-" + prev.slots[s.key]);
+        if (r) r.checked = true;
+      });
+      $("f-name").value = prev.name || "";
+      $("f-max").value = prev.max ? String(prev.max) : "";
+      $("f-note").value = prev.note || "";
+      setStatus("Your last saved answer is loaded.");
+    }
+  } catch (e) {}
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (saving || !ENDPOINT) return;
+    var slots = {};
+    for (var i = 0; i < SLOTS.length; i++) {
+      var c = form.querySelector('input[name="s-' + SLOTS[i].key + '"]:checked');
+      if (!c) { setStatus("Choose an answer for all four times first.", true); return; }
+      slots[SLOTS[i].key] = c.value;
+    }
+    var name = $("f-name").value.trim().replace(/\s+/g, " ").slice(0, 60);
+    if (!name) { setStatus("Enter your name so the course admin knows whose answer this is.", true); $("f-name").focus(); return; }
+    var maxV = parseInt($("f-max").value, 10);
+    var body = { name: name, slots: slots, max: maxV >= 1 && maxV <= 4 ? maxV : null, note: $("f-note").value.trim().slice(0, 300) };
+
+    saving = true; saveBtn.disabled = true; setStatus("Saving…");
+    /* text/plain keeps this a simple request, which Apps Script web apps accept cross-origin. */
+    fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function (res) { return res.json(); })
+      .then(function (out) {
+        if (!out || !out.ok) throw new Error("rejected");
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(body)); } catch (e) {}
+        setStatus(out.updated ? "Updated. Your earlier answer was replaced." : "Saved. Thanks, " + name + ".");
+      })
+      .catch(function () {
+        setStatus("Couldn’t save. Check your connection and try again; if it keeps failing, message the course admin.", true);
+      })
+      .then(function () { saving = false; saveBtn.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>
