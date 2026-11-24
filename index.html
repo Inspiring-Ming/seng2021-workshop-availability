@@ -68,8 +68,8 @@ button:disabled { opacity: 0.55; cursor: default; }
 <div class="wrap">
   <header>
     <p class="eyebrow">SENG2021 · 27T1 · Workshop allocation</p>
-    <h1>Which workshop times can you teach?</h1>
-    <p class="lede">Mark every time below, then save. Workshops run in weeks 1–5 and 7–10. To change your answer, save again with the same name. Only the course admin sees your answer.</p>
+    <h1>Which workshops can you teach?</h1>
+    <p class="lede">Mark all five workshops below, then save. Each tutor is allocated one workshop. Workshops run in weeks 1–5 and 7–10. To change your answer, save again with the same name; only your latest answer is kept. Only the course admin sees your answer.</p>
   </header>
 
   <p class="note warn" id="setup-note" hidden>This form isn’t connected yet, so answers can’t be saved. The course admin needs to finish setup.</p>
@@ -77,19 +77,9 @@ button:disabled { opacity: 0.55; cursor: default; }
   <form id="avail-form" novalidate>
     <div id="slots"></div>
     <div class="fields">
-      <div class="field">
+      <div class="field wide">
         <label for="f-name">Your full name</label>
         <input type="text" id="f-name" maxlength="60" autocomplete="name" placeholder="e.g. Alex Chen" required>
-      </div>
-      <div class="field">
-        <label for="f-max">Most workshops you want</label>
-        <select id="f-max">
-          <option value="">No limit</option>
-          <option value="1">1 workshop</option>
-          <option value="2">2 workshops</option>
-          <option value="3">3 workshops</option>
-          <option value="4">4 workshops</option>
-        </select>
       </div>
       <div class="field wide">
         <label for="f-note">Anything the allocator should know (optional)</label>
@@ -109,17 +99,18 @@ button:disabled { opacity: 0.55; cursor: default; }
   var ENDPOINT = "";
 
   var SLOTS = [
-    { key: "T16", when: "Tue 16:00–18:00", meta: "T16A (9364) and T16B (9365), two workshops at once" },
-    { key: "F09", when: "Fri 09:00–11:00", meta: "F09A (9359)" },
-    { key: "F11", when: "Fri 11:00–13:00", meta: "F11A (9361)" },
-    { key: "F15", when: "Fri 15:00–17:00", meta: "F15A (9362)" }
+    { key: "F09A", when: "F09A · Fri 09:00–11:00", meta: "Class 9359" },
+    { key: "F11A", when: "F11A · Fri 11:00–13:00", meta: "Class 9361" },
+    { key: "F15A", when: "F15A · Fri 15:00–17:00", meta: "Class 9362" },
+    { key: "T16A", when: "T16A · Tue 16:00–18:00", meta: "Class 9364" },
+    { key: "T16B", when: "T16B · Tue 16:00–18:00", meta: "Class 9365" }
   ];
   var CHOICES = [
     { v: "pref", label: "Preferred" },
     { v: "ok", label: "Can do" },
     { v: "no", label: "Can’t" }
   ];
-  var STORE_KEY = "seng2021-workshop-availability";
+  var STORE_KEY = "seng2021-workshop-availability-v2";
 
   var $ = function (id) { return document.getElementById(id); };
   var el = function (tag, cls, text) {
@@ -162,7 +153,6 @@ button:disabled { opacity: 0.55; cursor: default; }
         if (r) r.checked = true;
       });
       $("f-name").value = prev.name || "";
-      $("f-max").value = prev.max ? String(prev.max) : "";
       $("f-note").value = prev.note || "";
       setStatus("Your last saved answer is loaded.");
     }
@@ -174,13 +164,12 @@ button:disabled { opacity: 0.55; cursor: default; }
     var slots = {};
     for (var i = 0; i < SLOTS.length; i++) {
       var c = form.querySelector('input[name="s-' + SLOTS[i].key + '"]:checked');
-      if (!c) { setStatus("Choose an answer for all four times first.", true); return; }
+      if (!c) { setStatus("Choose an answer for all five workshops first.", true); return; }
       slots[SLOTS[i].key] = c.value;
     }
     var name = $("f-name").value.trim().replace(/\s+/g, " ").slice(0, 60);
     if (!name) { setStatus("Enter your name so the course admin knows whose answer this is.", true); $("f-name").focus(); return; }
-    var maxV = parseInt($("f-max").value, 10);
-    var body = { name: name, slots: slots, max: maxV >= 1 && maxV <= 4 ? maxV : null, note: $("f-note").value.trim().slice(0, 300) };
+    var body = { name: name, slots: slots, note: $("f-note").value.trim().slice(0, 300) };
 
     saving = true; saveBtn.disabled = true; setStatus("Saving…");
     /* text/plain keeps this a simple request, which Apps Script web apps accept cross-origin. */

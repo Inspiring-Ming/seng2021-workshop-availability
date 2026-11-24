@@ -5,11 +5,11 @@
  */
 
 var SHEET_NAME = 'Responses';
-var SLOT_KEYS = ['T16', 'F09', 'F11', 'F15'];
+var SLOT_KEYS = ['F09A', 'F11A', 'F15A', 'T16A', 'T16B'];
 var HEADERS = [
   'Updated', 'Name',
-  'Tue 16-18 (T16A, T16B)', 'Fri 09-11 (F09A)', 'Fri 11-13 (F11A)', 'Fri 15-17 (F15A)',
-  'Max workshops', 'Note'
+  'F09A Fri 09-11', 'F11A Fri 11-13', 'F15A Fri 15-17', 'T16A Tue 16-18', 'T16B Tue 16-18',
+  'Note'
 ];
 var LABELS = { pref: 'Preferred', ok: 'Can do', no: "Can't" };
 
@@ -23,11 +23,9 @@ function doPost(e) {
     var row = [new Date(), plain(name)];
     for (var i = 0; i < SLOT_KEYS.length; i++) {
       var label = LABELS[body.slots && body.slots[SLOT_KEYS[i]]];
-      if (!label) return reply({ ok: false, error: 'answer every time' });
+      if (!label) return reply({ ok: false, error: 'answer every workshop' });
       row.push(label);
     }
-    var max = Number(body.max);
-    row.push(max >= 1 && max <= 4 ? max : 'No limit');
     row.push(plain(String(body.note || '').slice(0, 300)));
 
     lock.waitLock(20000);

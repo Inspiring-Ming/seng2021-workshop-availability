@@ -1,6 +1,6 @@
 # SENG2021 Workshop Availability
 
-A one-page form, hosted on GitHub Pages, where tutors mark which workshop times they can teach. Answers go to a private Google Sheet that only the sheet's owner can open.
+A one-page form, hosted on GitHub Pages, where tutors mark which of the five workshops they can teach. Answers go to a private Google Sheet that only the sheet's owner can open.
 
 ## Connect the form to a Google Sheet (once)
 
@@ -17,7 +17,7 @@ Until step 6 is done, the page shows a "not connected yet" notice and the save b
 
 ## Reading the answers
 
-Open the Google Sheet. The `Responses` tab has one row per tutor: name, an answer for each workshop time (Preferred, Can do, Can't), the most workshops they want, and a note. If a tutor saves again with the same name, their row is replaced.
+Open the Google Sheet. The `Responses` tab has one row per tutor: name, an answer for each of the five workshops (Preferred, Can do, Can't), and a note. If a tutor saves again with the same name, their row is replaced, so only the latest answer is kept.
 
 ## Things to know
 
